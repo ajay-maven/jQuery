@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<title>URL Shortner</title>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+    <style type="text/css">
+    .form-width-fix {
+        max-width: 500px;
+        margin: 0 auto
+    }
+
+    .loader {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1040;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .loader.show {
+        display: flex;
+    }
+
+    .loader .circle {
+        height: 50px;
+        width: 50px;
+        border: 3px solid #fff;
+        border-radius: 50%;
+        border-top-color: var(--blue);
+        animation: spin 1s linear infinite
+    }
+    .fa.r {
+    	margin-right: 3px;
+    }
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    </style>
+    <script>
+    $(function() {
+        $('.btn-send').click(function() {
+            $('#loader').addClass('show');
+            var longUrl = $('#longUrl').val();
+            var shortUrl = $('#shortUrl').val();
+            url = "https://is.gd/create.php?format=json&url=" + longUrl + "&shorturl=" + shortUrl + "&logstats=0";
+            $.get(url, function(data) {
+                var data = $.parseJSON(data);
+                var shortenUrl = data.shorturl;
+                var errorMsg = data.errormessage;
+                var errorCode = data.errorcode;
+                if (shortenUrl != undefined) {
+                    $('#ulinput').val(shortenUrl);
+                    $('#loader').removeClass('show');
+                    $('#result').removeClass('d-none');
+                    $('#errorLabel').removeClass('text-danger').addClass('text-success').text('Congratulations. Your New URL is');                              		
+                } else {
+                    if (errorCode == 1) {
+                        $('#longUrl').focus();
+                    } else if (errorCode == 2) {
+                        $('#shortUrl').focus();
+                    }
+                     $('#result').addClass('d-none');
+                    $('#errorLabel').removeClass('text-success').addClass('text-danger').text(errorMsg);
+                    $('#loader').removeClass('show');
+                }
+            })
+        });
+        $('#copy').click(function() {
+            $('#ulinput').select();
+            document.execCommand("copy");
+        });
+        $('#shortUrl').keyup(function() {
+            var textValue = $(this).val();
+            textValue = textValue.replace(/ /g, "_");
+            $(this).val(textValue);
+        });
+        $('.btn-clear').click(function() {
+            $('#longUrl').val('');
+            $('#shortUrl').val('');
+            $('#ulinput').val('');
+            $('#result').addClass('d-none');
+            $('#errorLabel').text('');
+        })
+    });
+    </script>
+</head>
+
+<body>
+    <div class="loader" id="loader">
+        <div class="circle"></div>
+    </div>
+    <div class="container">
+        <h2 class="text-center mt-3">URL Shortner</h2>
+        <div class="form-horizontal form-width-fix">
+            <div class="form-group">
+                <label>Long URL</label>
+                <input type="text" class="form-control" placeholder="Paste Long URL" id="longUrl" autocomplete>
+            </div>
+            <div class="form-group">
+                <label>Short URL <small>( Optional )</small></label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon3">https://is.gd/</span>
+                    </div>
+                    <input type="text" class="form-control" placeholder="Type Short URL" id="shortUrl">
+                </div>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-send">Short</button>
+                <button type="submit" class="btn btn-default btn-clear">Clear</button>
+            </div>
+            <div>
+                <small id="errorLabel"></small><small>&nbsp;</small>
+            </div>
+
+            <div class="form-group d-none" id="result">
+            	 <div class="input-group">
+                        <input type="text" id="ulinput" class="form-control" />
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button" id="copy"><span class="fa fa-copy r"></span> Copy</button>
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
